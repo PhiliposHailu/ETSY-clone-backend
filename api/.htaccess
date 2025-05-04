@@ -1,0 +1,9 @@
+# /api/.htaccess
+RewriteEngine On
+
+# Skip rewrite if the file or directory exists
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Redirect all requests to index.php
+RewriteRule ^(.*)$ index.php [QSA,L]
