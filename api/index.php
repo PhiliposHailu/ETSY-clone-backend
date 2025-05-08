@@ -7,7 +7,7 @@
     $path = str_replace("/etsy-clone-backend/api", "", $url);
 
     // for api/cart/add/<p_id>
-    if($method == "POST" && preg_match("#^/cart/add/(\d+)$#", $path, $matches)){
+    if($method == "POST" && preg_match("#^/cart/add/(-?\d+)$#", $path, $matches)){
         $product_id = $matches[1];
         require "handlers/cart_add.php";
     }
