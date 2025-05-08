@@ -1,10 +1,11 @@
 <?php
-    header("Content_Type: Applicatioin/json");
+    header("Content-Type: applicatioin/json");
 
     $method = $_SERVER["REQUEST_METHOD"];
     $url = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
-    $path = str_replace("/api", "", $url);
+    $path = str_replace("/etsy-clone-backend/api", "", $url);
+
 
     // for api/cart/add/<p_id>
     if($method == "POST" && preg_match("#^/cart/add/(\d+)$#", $path, $matches)){
@@ -18,14 +19,14 @@
     }
     
     // for api/cart/remove/<p_id>
-    elseif($method == "POST" && preg_match("#^/cart/remove/(\d+)$#", $path, $matches)){
+    elseif($method == "DELETE" && preg_match("#^/cart/remove/(\d+)$#", $path, $matches)){
         $product_id = $matches[1];
         require "handlers/cart_list.php";
     }
     
     // for api/category/<p_id>
     elseif($method == "GET" &&  preg_match("#^/category/([\w-]+)$#", $path, $matches)) {
-            $category_id = $matches[1];
+            $category_name = $matches[1];
             require "handlers/category_get.php";
         
     }
