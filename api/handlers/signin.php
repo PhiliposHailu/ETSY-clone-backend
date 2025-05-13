@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
+require_once '../config/db.php';
 // session_start();
 header("Content-Type: application/json");
 
@@ -22,7 +22,7 @@ if (!empty($errors)) {
     exit;
 }
 
-try{
+try {
     $stmt = $pdo->prepare("SELECT id, username, password_hash FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $found_user = $stmt->fetch();
@@ -48,13 +48,10 @@ try{
     $stmt_insert_token->execute([$found_user['id'], $token, $expiry_time]);
 
     http_response_code(200);
-    echo json_encode( [ 'success' => true, "message" => "Login successful.", "user" => [ "id" => $found_user["id"], "username" => $found_user ["username"] ] ] );
-
+    echo json_encode(['success' => true, "message" => "Login successful.", "user" => ["id" => $found_user["id"], "username" => $found_user["username"]]]);
 } catch (\PDOException $e) {
     http_response_code(500);
     // Log the error for debugging(just incase)
     // error_log("Database error: " . $e->getMessage());
     echo json_encode(["success" => false, "message" => "A database error occurred during sign-in."]);
 }
-
-?>

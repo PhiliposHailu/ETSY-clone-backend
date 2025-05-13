@@ -1,5 +1,5 @@
-<?php 
-require_once __DIR__ . '/../../config/db.php';
+<?php
+require_once '../config/db.php';
 header("Content-Type: application/json");
 
 // Getting products id 
@@ -8,7 +8,7 @@ header("Content-Type: application/json");
 
 // lets validate the given product_id
 $value = $product_id ?? null; // do we have a product id , if yes value == product id else defaultValue(null)
-$product_id = filter_var( $value, FILTER_VALIDATE_INT );
+$product_id = filter_var($value, FILTER_VALIDATE_INT);
 
 if ($product_id == null || $product_id == false) {
     http_response_code(400);
@@ -16,7 +16,7 @@ if ($product_id == null || $product_id == false) {
     exit();
 }
 
-try{
+try {
     $stmt = $pdo->prepare("SELECT id, user_id, title, description, price, stock_quantity, category, created_at FROM products WHERE id = ?");
     $stmt->execute([$product_id]);
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -36,5 +36,3 @@ try{
     // error_log("Database error: " . $e->getMessage());
     echo json_encode(["success" => false, "message" => "A database error occurred while fetching the product."]); // generic message
 }
-
-?>

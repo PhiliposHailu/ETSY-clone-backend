@@ -1,5 +1,5 @@
 <?php
-    require_once '../../config/db.php';
+    require_once '../config/db.php';
 
     $stmt = $pdo->prepare("SELECT * FROM products WHERE category = ?");
     $stmt->execute([$category_name]);
