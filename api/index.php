@@ -4,13 +4,21 @@
     $method = $_SERVER["REQUEST_METHOD"];
     $url = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
-    $path = str_replace("/etsy-clone-backend/api", "", $url);
+    $path = str_replace("/php-project-etsy-backend/api", "", $url);
 
     // for api/cart/add/<p_id>
-    if($method == "POST" && preg_match("#^/cart/add/(-?\d+)$#", $path, $matches)){
-        $product_id = $matches[1];
+    if ($method === "POST" && preg_match("#^/cart/add/(\d+)$#", $path, $matches)) {
+        $product_id = (int)$matches[1];
+    
+        if ($product_id <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid 123241 product ID']);
+            exit;
+        }
+    
         require "handlers/cart_add.php";
     }
+    
     
     // for api/cart
     elseif($method == "GET" && $path == "/cart"){
@@ -46,7 +54,7 @@
 
     // GET /listing – all listings
     elseif ($method === "GET" && $path === "/product_list") {
-        require "handlers/products_list.php";
+        require "handlers/product_list.php";
     }
 
     // GET /listing/<id> – single listing
