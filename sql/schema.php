@@ -12,6 +12,13 @@ try {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
+        CREATE TABLE IF NOT EXISTS categories (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            image VARCHAR(255), -- path or URL to image
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
         CREATE TABLE IF NOT EXISTS products (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
@@ -19,10 +26,12 @@ try {
             description TEXT,
             price DECIMAL(10, 2) NOT NULL,
             stock_quantity INT NOT NULL,
-            category VARCHAR(100),
+            category_id INT NOT NULL, -- Foreign key to categories
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (category_id) REFERENCES categories(id)
         );
+
 
         CREATE TABLE IF NOT EXISTS product_images (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -58,6 +67,24 @@ try {
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (product_id) REFERENCES products(id)
         );
+
+        CREATE TABLE IF NOT EXISTS favorites (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        product_id INT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+        FOREIGN KEY (user_id) REFERENCES users(id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+
+        FOREIGN KEY (product_id) REFERENCES products(id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE,
+
+        UNIQUE(user_id, product_id) -- To prevent duplicate favorites
+    );
+
 
         CREATE TABLE IF NOT EXISTS reviews (
             id INT AUTO_INCREMENT PRIMARY KEY,

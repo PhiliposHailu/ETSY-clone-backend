@@ -1,5 +1,5 @@
 <?php
-    require_once '../../config/db.php';
+    require_once '../config/db.php';
 
     $stmt = $pdo->query("SELECT * FROM products");
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);

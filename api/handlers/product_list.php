@@ -1,17 +1,18 @@
 <?php
 // publicly accessible no autentication required
+require_once '../config/db.php';
 require_once __DIR__ . '/../../config/db.php';
 // require_once __DIR__ . '/../../api/handlers/auth.php';
 // sets up the content type as json , so basically means we are declaring that we will be sending back json file back to the frontend
 header('Content-Type: applicaiton/json');
 
-try{
+try {
 
     $stmt = $pdo->prepare("SELECT id, title, description, price, stock_quantity, category FROM products");
     $stmt->execute();
 
     // fetch all the products in the database as an associative array
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     http_response_code(200);
     // json_encode() changes the php associative array to json format before sending it to the forntend

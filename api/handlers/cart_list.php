@@ -1,5 +1,5 @@
 <?php
-    require_once '../../config/db.php';
+    require_once '../config/db.php';
     header('Content-Type: application/json');
 
     $cookie_name = "cart";
@@ -20,10 +20,10 @@
         exit;
     }
 
-    $placeholders = rtrim(str_repeat('?,', count($productIds)), ',');
+    $placeholders = rtrim(str_repeat('?,', count($product_ids)), ',');
 
     $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
-    $stmt->execute($productIds);
+    $stmt->execute($product_ids);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $cartWithDetails = [];
