@@ -1,4 +1,5 @@
 <?php
+// require_once __DIR__ . '/../../config/db.php';
 require_once '../config/db.php';
 // session_start();
 header("Content-Type: application/json");
@@ -33,13 +34,11 @@ try {
         exit;
     }
 
-    // $_SESSION["email"] = $email;
-    // $_SESSION["name"] = $user["username"];
-
     // token based authentication 
     $token = bin2hex(random_bytes(32));
     $expiry_time = date('Y-m-d H:i:s', strtotime('+7 days'));
 
+    // delete any old tokens for this user
     $stmt_delete_old = $pdo->prepare("DELETE FROM user_tokens WHERE user_id = ?");
     $stmt_delete_old->execute([$found_user['id']]);
 
@@ -48,6 +47,17 @@ try {
     $stmt_insert_token->execute([$found_user['id'], $token, $expiry_time]);
 
     http_response_code(200);
+    echo json_encode( [ 
+        'success' => true, 
+        "message" => "Login successful.", 
+        "user" => [ "id" => $found_user["id"], 
+                    "username" => $found_user ["username"] 
+        ],
+        "token" => $token,
+        "expires_at" => $expiry_time
+        
+    ] );
+
     echo json_encode(['success' => true, "message" => "Login successful.", "user" => ["id" => $found_user["id"], "username" => $found_user["username"]]]);
 } catch (\PDOException $e) {
     http_response_code(500);
