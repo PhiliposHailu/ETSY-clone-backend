@@ -46,7 +46,7 @@
 
     // GET /listing – all listings
     elseif ($method === "GET" && $path === "/product_list") {
-        require "handlers/products_list.php";
+        require "handlers/product_list.php";
     }
 
     // GET /listing/<id> – single listing

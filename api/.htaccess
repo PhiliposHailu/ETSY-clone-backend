@@ -7,3 +7,6 @@ RewriteCond %{REQUEST_FILENAME} !-d
 
 # Redirect all requests to index.php
 RewriteRule ^(.*)$ index.php [QSA,L]
+
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
