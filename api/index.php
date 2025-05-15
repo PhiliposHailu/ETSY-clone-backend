@@ -4,7 +4,7 @@
     $method = $_SERVER["REQUEST_METHOD"];
     $url = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
-    $path = str_replace("/php-project-etsy-backend/api", "", $url);
+    $path = str_replace("/etsy-clone-backend/api", "", $url);
 
     // for api/cart/add/<p_id>
     if ($method === "POST" && preg_match("#^/cart/add/(\d+)$#", $path, $matches)) {
@@ -12,7 +12,7 @@
     
         if ($product_id <= 0) {
             http_response_code(400);
-            echo json_encode(['error' => 'Invalid 123241 product ID']);
+            echo json_encode(['error' => 'Invalid product ID']);
             exit;
         }
     
@@ -27,14 +27,24 @@
     
     // for api/cart/remove/<p_id>
     elseif($method == "DELETE" && preg_match("#^/cart/remove/(\d+)$#", $path, $matches)){
-        $product_id = $matches[1];
-        require "handlers/cart_list.php";
+        $product_id = (int)$matches[1];
+        if ($product_id <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid product ID']);
+            exit;
+        }
+        require "handlers/cart_remove.php";
     }
     
     // for api/category/<p_id>
     elseif($method == "GET" &&  preg_match("#^/category/([\w-]+)$#", $path, $matches)) {
             $category_name = $matches[1];
             require "handlers/category_get.php";
+    }
+
+    // for api/favorite
+    elseif($method == "GET" && $path == "/favorite"){
+        require "handlers/favorites.php";
     }
     
     // for api/category
