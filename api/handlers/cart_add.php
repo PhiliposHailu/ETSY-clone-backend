@@ -1,15 +1,13 @@
 <?php
 require_once '../config/db.php';
+require_once 'auth.php';
 header('Content-Type: application/json');
-
-// Simulated user ID (replace this with session or token logic)
-$user_id = 1; // Example: assume user with ID 2 is logged in
 
 $cookie_name = "cart";
 $cookie_expire = time() + (7 * 24 * 60 * 60); 
 
 // Assume product_id comes from GET or POST
-$product_id = isset($_GET['product_id']) ? (int)$_GET['product_id'] : 0;
+// $product_id = isset($_GET['product_id']) ? (int)$_GET['product_id'] : 0;
 
 if (!$product_id || $product_id <= 0) {
     http_response_code(400);

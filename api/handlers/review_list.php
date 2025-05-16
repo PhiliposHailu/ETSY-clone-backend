@@ -9,7 +9,7 @@ if (!$product_id) {
 
 try {
     $stmt = $pdo->prepare("
-        SELECT r.id, r.rating, r.comment, r.created_at, u.username 
+        SELECT r.product_id, r.rating, r.comment, r.created_at, u.username
         FROM reviews r
         JOIN users u ON r.user_id = u.id
         WHERE r.product_id = ?

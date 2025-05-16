@@ -1,10 +1,7 @@
 <?php
 require_once '../config/db.php';
+require_once 'auth.php';
 header('Content-Type: application/json');
-
-// Simulated user ID (replace with session/token logic)
-session_start();
-$user_id = $_SESSION['id'];
 
 $cookie_name = "cart";
 $cartItems = [];

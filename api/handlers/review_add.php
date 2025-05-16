@@ -1,14 +1,12 @@
 <?php
     require_once '../config/db.php';
     require_once 'auth.php';
-    session_start();
     $data = json_decode(file_get_contents("php://input"), true);
     $_POST = $data ?? [];
-    $user_id = $_SESSION['id'];
     $rating = $_POST['rating'] ?? null;
     $comment = $_POST['comment'] ?? '';
 
-    echo "{$user_id}  {$rating} {$comment} <br>";
+    echo "product:{$product_id}, user:{$user_id}, rating{$rating}";
 
     // Basic validation
     if (!$product_id || !$user_id || !$rating || $rating < 1 || $rating > 5) {
