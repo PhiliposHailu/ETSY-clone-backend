@@ -1,9 +1,10 @@
 <?php
 // connect to the database 
-require_once '././config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 
 // authenticate 
 require_once 'auth.php';
+// var_dump($user_id); // Add this line temporarily
 
 // tell the client that we are sending it json response 
 header('Content-Type: application/json');
@@ -28,7 +29,7 @@ try {
 
     $errors = [];
     $title = trim($data['title'] ?? '');
-    $description = trim($data['description' ?? '']);
+    $description = trim($data['description'] ?? '');
     $price = filter_var($data['price'] ?? '', FILTER_VALIDATE_FLOAT);
     $stock_quantity = filter_var($data['stock_quantity'] ?? '', FILTER_VALIDATE_INT);
     $category_id = filter_var($data['category_id'] ?? '', FILTER_VALIDATE_INT);
@@ -80,5 +81,5 @@ try {
 
 } catch (\PDOException $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "messgae" => "An internal server error occurred during seller verification."]);
+    echo json_encode(["success" => false, "messgae" => "An internal server error occurred during seller verification.", "errors :" => $e]);
 }
