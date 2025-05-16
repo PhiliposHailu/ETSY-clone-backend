@@ -66,12 +66,12 @@
     }
 
     // for api/favorite
-    elseif($method == "GET" && $path == "/favorite"){
+    elseif($method === "GET" && $path === "/favorite"){
         require "handlers/favorites.php";
     }
     
     // for api/category
-    elseif ($method == "GET" && $path == "/category") {
+    elseif ($method === "GET" && $path === "/category") {
             require "handlers/category_list.php";
     }
 
@@ -85,15 +85,15 @@
         require "handlers/signin.php";
     }
 
-    // GET /listing – all listings
-    elseif ($method === "GET" && $path === "/product_list") {
-        require "handlers/product_list.php";
+    // GET /products – all products
+    elseif ($method === "GET" && $path === "/products") {
+        require "handlers/products.php";
     }
 
-    // GET /listing/<id> – single listing
-    elseif ($method === "GET" && preg_match("#^/product_get/(\d+)$#", $path, $matches)) {
+    // GET /product/<id> – single product
+    elseif ($method === "GET" && preg_match("#^/product/(\d+)$#", $path, $matches)) {
         $product_id = $matches[1]; // Router extracts the ID and stores it
-        require "handlers/product_get.php";
+        require "handlers/product.php";
     }
 
     // GET /seller/<id> – get seller details
@@ -101,8 +101,28 @@
         $seller_id = $matches[1];
         require "handlers/seller_get.php";
     }
+
+    //-- Product Endpoints for Sellers --//
+
+    // Add new product
+    elseif ($method === "POST" && $path === "/product/add") {
+        require "handlers/product_add.php";
+    }
+
+    // Update existing product
+    elseif ($method === "PUT" && preg_match("#^/product/update/(\d+)$#", $path, $matches)) {
+        $product_id = (int)$matches[1];
+        require "handlers/product_update.php";
+    }
+
+    // Delete a product
+    elseif ($method === "DELETE" && preg_match("#^/products/delete/(\d+)$#", $path, $matches)) {
+        $product_id = (int)$matches[1];
+        require "handlers/product_remove.php";
+    }
     
-    else{
+    else {
         http_response_code(404);
+        echo json_encode(["success" => false, "message" => "Sorry , Falied to process request !"]);
     }
 ?>

@@ -58,7 +58,6 @@ try {
         
     ] );
 
-    echo json_encode(['success' => true, "message" => "Login successful.", "user" => ["id" => $found_user["id"], "username" => $found_user["username"]]]);
 } catch (\PDOException $e) {
     http_response_code(500);
     // Log the error for debugging(just incase)

@@ -36,7 +36,6 @@ try {
 
     $user_id = $valid_token['user_id'];
 
-
 } catch (\PDOException $e) {
     http_response_code(500);
     // error log for debugging purposes

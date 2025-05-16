@@ -83,7 +83,7 @@ try {
             ON UPDATE CASCADE,
 
         UNIQUE(user_id, product_id) -- To prevent duplicate favorites
-    );
+        );
 
 
         CREATE TABLE IF NOT EXISTS reviews (
