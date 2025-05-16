@@ -1,42 +1,55 @@
 <?php
-    require_once '../config/db.php';
-    header('Content-Type: application/json');
+require_once '../config/db.php';
+header('Content-Type: application/json');
 
-    $cookie_name = "cart";
+// Simulated user ID (replace with session/token logic)
+session_start();
+$user_id = $_SESSION['id'];
 
-    if (isset($_COOKIE[$cookie_name])){
-        $cart = json_decode($_COOKIE[$cookie_name], true);
-        if(!is_array($cart)){
-            $cart = [];
-        } 
-    }else{
-        $cart = [];
+$cookie_name = "cart";
+$cartItems = [];
+
+// ------------------- COOKIE CART -------------------
+
+if (isset($_COOKIE[$cookie_name])) {
+    $cookie_cart = json_decode($_COOKIE[$cookie_name], true);
+    if (is_array($cookie_cart)) {
+        $cartItems = $cookie_cart;
     }
+}
 
-    $product_ids = array_column($cart, 'product_id');
+// ------------------- DATABASE CART -------------------
 
-    if(empty($product_ids)){
-        echo json_encode([]);
-        exit;
-    }
+try {
+    $stmt = $pdo->prepare("
+        SELECT 
+            ci.product_id,
+            ci.quantity,
+            p.title AS product_name,
+            p.price,
+            c.name AS category_name,
+            (
+                SELECT image_url FROM product_images 
+                WHERE product_id = p.id 
+                ORDER BY id ASC LIMIT 1
+            ) AS product_image
+        FROM cart_items ci
+        JOIN products p ON ci.product_id = p.id
+        JOIN categories c ON p.category_id = c.id
+        WHERE ci.user_id = ?
+    ");
+    $stmt->execute([$user_id]);
+    $dbCart = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $placeholders = rtrim(str_repeat('?,', count($product_ids)), ',');
-
-    $stmt = $pdo->prepare("SELECT * FROM products WHERE id IN ($placeholders)");
-    $stmt->execute($product_ids);
-    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    $cartWithDetails = [];
-    foreach ($products as $product) {
-        foreach ($cart as $item) {
-            if ($item['product_id'] == $product['id']) {
-                $product['quantity'] = $item['quantity'];
-                $cartWithDetails[] = $product;
-                break;
-            }
-        }
-    }
-
-    echo json_encode($cartWithDetails);
-
-?>
+    echo json_encode([
+        'success' => true,
+        'source' => 'database',
+        'cart' => $dbCart
+    ]);
+} catch (PDOException $e) {
+    error_log("DB Error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode([
+        'error' => 'Failed to fetch cart items from database'
+    ]);
+}

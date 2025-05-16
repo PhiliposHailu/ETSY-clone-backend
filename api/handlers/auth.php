@@ -34,7 +34,7 @@ try {
         exit();
     }
 
-    $authenticated_user_id = $valid_token['user_id'];
+    $user_id = $valid_token['user_id'];
 
 
 } catch (\PDOException $e) {

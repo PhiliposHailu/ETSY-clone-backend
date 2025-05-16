@@ -35,6 +35,29 @@
         }
         require "handlers/cart_remove.php";
     }
+
+    // for api/review/add/<p_id>
+    elseif($method == "POST" && preg_match("#^/review/add/(\d+)$#", $path, $matches)){
+        $product_id = (int)$matches[1];
+        if($product_id <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid product ID']);
+            exit;
+        }
+        require "handlers/review_add.php";
+    }
+
+    // for api/review/<p_id>
+    elseif($method == "GET" && preg_match("#^/review/(\d+)$#", $path, $matches)){
+        $product_id = (int)$matches[1];
+        if($product_id <= 0){
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid product ID']);
+            exit;
+        }
+        require "handlers/review_list.php";
+
+    }
     
     // for api/category/<p_id>
     elseif($method == "GET" &&  preg_match("#^/category/([\w-]+)$#", $path, $matches)) {

@@ -1,7 +1,7 @@
 <?php
     require_once '../config/db.php';
 
-    $stmt = $pdo->query("SELECT * FROM products");
+    $stmt = $pdo->query("SELECT id, name, image FROM categories");
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     header('Content-Type: application/json');
