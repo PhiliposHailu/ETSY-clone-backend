@@ -62,15 +62,15 @@
         require "handlers/signin.php";
     }
 
-    // GET /listing – all listings
-    elseif ($method === "GET" && $path === "/product_list") {
-        require "handlers/product_list.php";
+    // GET /products – all listings
+    elseif ($method === "GET" && $path === "/products") {
+        require "handlers/products.php";
     }
 
-    // GET /listing/<id> – single listing
-    elseif ($method === "GET" && preg_match("#^/product_get/(\d+)$#", $path, $matches)) {
+    // GET /product/<id> – single listing
+    elseif ($method === "GET" && preg_match("#^/product/(\d+)$#", $path, $matches)) {
         $product_id = $matches[1]; // Router extracts the ID and stores it
-        require "handlers/product_get.php";
+        require "handlers/product.php";
     }
 
     // GET /seller/<id> – get seller details

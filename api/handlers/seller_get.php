@@ -27,7 +27,7 @@ try {
     } else {
         http_response_code(404); // not found
         echo json_encode(["success" => false, "message" => "Seller not found."]);
-        exit;
+        exit();
     }
 } catch (\PDOException $e) {
     http_response_code(500); //server side error

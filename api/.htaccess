@@ -8,5 +8,8 @@ RewriteCond %{REQUEST_FILENAME} !-d
 # Redirect all requests to index.php
 RewriteRule ^(.*)$ index.php [QSA,L]
 
+# RewriteCond %{HTTP:Authorization} ^(.*): This condition checks if an Authorization header exists in the incoming HTTP request and captures its entire value.
 RewriteCond %{HTTP:Authorization} ^(.*)
+# RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]: This rule takes the captured value from the Authorization header (%1) and sets it as an environment variable named HTTP_AUTHORIZATION
 RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
