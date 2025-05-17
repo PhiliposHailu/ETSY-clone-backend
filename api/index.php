@@ -134,6 +134,12 @@
     elseif ($method === "GET" && $path === "/get_me") {
         require "handlers/get_me.php";
     }
+
+    // Get Orders Made to a Loged in user 
+    elseif ($method === "GET" && preg_match("/order/(\d+)$#", $path, $matches)) {
+        $seller_id = $matches[1];
+        require "handlers/order.php";
+    }
     
     else {
         http_response_code(404);
