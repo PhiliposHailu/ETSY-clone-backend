@@ -93,7 +93,7 @@
     }
 
     // Delete a product
-    elseif ($method === "DELETE" && preg_match("#^/products/delete/(\d+)$#", $path, $matches)) {
+    elseif ($method === "DELETE" && preg_match("#^/product/delete/(\d+)$#", $path, $matches)) {
         $product_id = (int)$matches[1];
         require "handlers/product_remove.php";
     }

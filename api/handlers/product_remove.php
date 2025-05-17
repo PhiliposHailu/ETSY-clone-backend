@@ -1,5 +1,5 @@
 <?php 
-require_once '././config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 require_once 'auth.php';
 
 header("Content-Type: application/json");
@@ -20,22 +20,7 @@ try {
     $json_data = file_get_contents("php://input");
     $data = json_decode($json_data, true);
 
-    $product_id = null;
-
-    // check if the product id exists in the JSON data from the request body 
-    if (isset($data['product_id'])) {
-        $product_id = $data["product_id"];
-    }
-    // check if it exists in our URL query parameters
-    elseif (isset($_GET['product_id'])) {
-        $product_id = $_GET['product_id'];
-    }
-    // if not found in either place 
-    else {
-        $product_id = '';
-    }
     // vavlidat product id 
-    $product_id = filter_var($product_id, FILTER_VALIDATE_INT);
     if ($product_id == false || $product_id <= 0) {
         http_response_code(400);
         echo json_encode(["success" => false, "message" => "Valid product ID is required for deletion."]);

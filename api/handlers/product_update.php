@@ -1,5 +1,5 @@
 <?php 
-require_once '././config/db.php';
+require_once __DIR__ . '/../../config/db.php';
 require_once 'auth.php';
 
 header("Content-Type: application/json");
@@ -22,7 +22,6 @@ try {
     $data = json_decode($json_data, true);
 
     // validate input 
-    $product_id = filter_var($data["product_id"] ?? '', FILTER_VALIDATE_INT);
     if ($product_id == false || $product_id <= 0) {
         http_response_code(403);
         echo json_encode(["success" => false, "message" => "Valid product ID is required for update."]);
