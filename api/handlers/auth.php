@@ -6,12 +6,7 @@ require_once __DIR__ . '/../../config/db.php';
 header("Content-Type: application/json");
 
 // get the token 
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-$token = null;
-
-if (!empty($authHeader) && preg_match('/Bearer\s(\S+)/', $authHeader, $matches) ) {
-    $token = $matches[1];  # retrive token
-}
+$token = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
 
 // check if the token is found 
 if (!$token) {

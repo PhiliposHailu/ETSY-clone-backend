@@ -1,8 +1,8 @@
 <?php
     require_once '../config/db.php';
 
-    $stmt = $pdo->prepare("SELECT id, name, image FROM categories WHERE name = ?");
-    $stmt->execute([$category_name]);
+    $stmt = $pdo->prepare("SELECT id, name, image FROM categories WHERE id = ?");
+    $stmt->execute([$category_id]);
 
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
