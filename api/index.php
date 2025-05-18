@@ -17,7 +17,7 @@
     }
 
     // for api/cart/add/<p_id>
-    if ($method === "POST" && preg_match("#^/cart/add/(\d+)$#", $path, $matches)) {
+    if (($method === "POST" || $method === "PUT") && preg_match("#^/cart/add/(\d+)$#", $path, $matches)) {
         $product_id = (int)$matches[1];
     
         if ($product_id <= 0) {
@@ -27,6 +27,17 @@
         }
     
         require "handlers/cart_add.php";
+    }
+
+    else if ($method === "DELETE" && preg_match("#^/cart/delete/(\d+)$#", $path, $matches)) {
+        $product_id = (int)$matches[1];
+    
+        if ($product_id <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
+            exit;
+        }
+        require "handlers/cart_delete.php";
     }
     
     
