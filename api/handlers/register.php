@@ -11,6 +11,7 @@ $data = json_decode($json_data, true);
 $email = trim(filter_var($data["email"] ?? "", FILTER_SANITIZE_EMAIL));
 $username = trim($data["username"] ?? "");
 $password = trim($data["password"] ?? "");
+$is_seller = $data["is_seller"]; /////////////////////////////////MICKY CHECK ME OUT //
 
 $errors = [];
 
@@ -69,8 +70,8 @@ try {
 
     // Regsiter user 
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)");
-    $registered = $stmt->execute([$email, $username, $hashedPassword]);
+    $stmt = $pdo->prepare("INSERT INTO users (email, username, password_hash, is_seller) VALUES (?, ?, ?, ?)");
+    $registered = $stmt->execute([$email, $username, $hashedPassword, $is_seller]);
 
     if ($registered) {
         http_response_code(201);
