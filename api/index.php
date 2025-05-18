@@ -58,7 +58,7 @@
     }
 
     // for api/review/<p_id>
-    elseif($method == "GET" && preg_match("#^/review/(\d+)$#", $path, $matches)){
+    elseif($method == "GET" && preg_match("#^/reviews/(\d+)$#", $path, $matches)){
         $product_id = (int)$matches[1];
         if($product_id <= 0){
             http_response_code(400);
@@ -134,9 +134,13 @@
     elseif ($method === "GET" && $path === "/get_me") {
         require "handlers/get_me.php";
     }
+
+    elseif ($method === "GET" && isset($_GET['id']) && str_contains("/users", $path)) {
+        $user_id = $_GET['id'];
+        require "handlers/get_user.php";
+    }
     
     else {
         http_response_code(404);
-        echo json_encode(["success" => false, "message" => "Sorry , Falied to process request !"]);
+        echo json_encode(["success" => false, "message" => "$path API Endpoint Not Found!"]);
     }
-?>

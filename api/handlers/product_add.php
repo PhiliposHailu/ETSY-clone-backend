@@ -118,7 +118,7 @@ try {
     if (!empty($errors)) {
         // Clean up uploaded files if there were other errors
         foreach ($uploaded_image_paths as $path) {
-            $full_path = __DIR__ . '/../../uploads/' . $path; // Construct full path
+            $full_path = __DIR__ . '/../../uploads' . $path; // Construct full path
             if (file_exists($full_path)) {
                 unlink($full_path); // Delete the file
             }
@@ -155,7 +155,7 @@ try {
         $pdo->rollBack(); // Roll back the transaction on error
         // Clean up uploaded files if database insertion failed
         foreach ($uploaded_image_paths as $path) {
-            $full_path = __DIR__ . '/../../public' . $path; // Construct full path
+            $full_path = __DIR__ . '/../../uploads/' . $path; // Construct full path
             if (file_exists($full_path)) {
                 unlink($full_path); // Delete the file
             }
