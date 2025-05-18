@@ -77,7 +77,27 @@
 
     // for api/favorite
     elseif($method === "GET" && $path === "/favorite"){
-        require "handlers/favorites.php";
+        require "handlers/favorites_list.php";
+    }
+
+    elseif($method === "POST" && preg_match("#^/favorite/(\d+)$#", $path, $matches)){
+        $product_id = (int)$matches[1];
+        if($product_id <= 0){
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid product ID']);
+            exit;
+        }
+        require "handlers/favorites_add.php";
+    }
+
+     elseif($method === "DELETE" && preg_match("#^/favorite/(\d+)$#", $path, $matches)){
+        $product_id = (int)$matches[1];
+        if($product_id <= 0){
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid product ID']);
+            exit;
+        }
+        require "handlers/favorites_remove.php";
     }
     
     // for api/category
