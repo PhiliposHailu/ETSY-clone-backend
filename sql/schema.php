@@ -32,7 +32,6 @@ try {
             FOREIGN KEY (category_id) REFERENCES categories(id)
         );
 
-
         CREATE TABLE IF NOT EXISTS product_images (
             id INT AUTO_INCREMENT PRIMARY KEY,
             product_id INT NOT NULL,

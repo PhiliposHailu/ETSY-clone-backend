@@ -1,10 +1,20 @@
 <?php
-    header("Content-Type: application/json");
+    header("Content-Type: application/json, multipart/form-data, application/x-www-form-urlencoded");
+    header("Access-Control-Allow-Credentials: true");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS, DELETE, PUT");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
+    header("Access-Control-Allow-Origin: *");
 
     $method = $_SERVER["REQUEST_METHOD"];
     $url = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
-    $path = str_replace("/etsy-clone-backend/api", "", $url);
+    $path = str_replace("/etsy/api", "", $url);
+
+    if ($method === 'OPTIONS') {
+        // Respond with 204 No Content for a successful preflight
+        http_response_code(204);
+        exit(); // Stop script execution after handling preflight
+    }
 
     // for api/cart/add/<p_id>
     if ($method === "POST" && preg_match("#^/cart/add/(\d+)$#", $path, $matches)) {
@@ -60,8 +70,8 @@
     }
     
     // for api/category/<p_id>
-    elseif($method == "GET" &&  preg_match("#^/category/([\w-]+)$#", $path, $matches)) {
-            $category_name = $matches[1];
+    elseif($method == "GET" &&  preg_match("#^/category/(\d+)$#", $path, $matches)) {
+            $category_id = $matches[1];
             require "handlers/category_get.php";
     }
 
@@ -86,7 +96,7 @@
     }
 
     // GET /products – all products
-    elseif ($method === "GET" && $path === "/products") {
+    elseif ($method === "GET" && str_contains($path, "/products")) {
         require "handlers/products.php";
     }
 
@@ -116,9 +126,19 @@
     }
 
     // Delete a product
-    elseif ($method === "DELETE" && preg_match("#^/products/delete/(\d+)$#", $path, $matches)) {
+    elseif ($method === "DELETE" && preg_match("#^/product/delete/(\d+)$#", $path, $matches)) {
         $product_id = (int)$matches[1];
         require "handlers/product_remove.php";
+    }
+
+    elseif ($method === "GET" && $path === "/get_me") {
+        require "handlers/get_me.php";
+    }
+
+    // Get Orders Made to a Loged in user 
+    elseif ($method === "GET" && preg_match("/order/(\d+)$#", $path, $matches)) {
+        $seller_id = $matches[1];
+        require "handlers/order.php";
     }
     
     else {

@@ -1,6 +1,5 @@
 <?php
 require_once '../config/db.php';
-require_once 'auth.php';
 header('Content-Type: application/json');
 
 $cookie_name = "cart";
