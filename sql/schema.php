@@ -44,7 +44,13 @@ try {
             buyer_id INT NOT NULL,
             total_price DECIMAL(10, 2) NOT NULL,
             status VARCHAR(50) DEFAULT 'Pending',
+            payment_method VARCHAR(50) NOT NULL,
+            shipping_address TEXT NOT NULL,
+            billing_address TEXT,
+            contact_phone VARCHAR(20) NOT NULL,
+            notes TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
             FOREIGN KEY (buyer_id) REFERENCES users(id)
         );
 
