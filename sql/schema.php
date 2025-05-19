@@ -53,6 +53,31 @@ try {
             FOREIGN KEY (product_id) REFERENCES products(id)
         );
 
+        CREATE TABLE IF NOT EXISTS orders (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            buyer_id INT NOT NULL,
+            total_price DECIMAL(10, 2) NOT NULL,
+            status VARCHAR(50) DEFAULT 'Pending',
+            payment_method VARCHAR(50) NOT NULL,
+            shipping_address TEXT NOT NULL,
+            billing_address TEXT,
+            contact_phone VARCHAR(20) NOT NULL,
+            notes TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (buyer_id) REFERENCES users(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS order_items (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            order_id INT NOT NULL,
+            product_id INT NOT NULL,
+            quantity INT NOT NULL,
+            price DECIMAL(10, 2) NOT NULL,
+            FOREIGN KEY (order_id) REFERENCES orders(id),
+            FOREIGN KEY (product_id) REFERENCES products(id)
+        );
+
         CREATE TABLE IF NOT EXISTS cart_items (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
@@ -105,54 +130,6 @@ try {
             FOREIGN KEY (user_id) REFERENCES users(id)
             ON DELETE CASCADE -- Deletes all tokens if the associated user is deleted
             ON UPDATE CASCADE -- Updates user_id in all user tokens if user.id changes
-        );
-
-        CREATE TABLE IF NOT EXISTS addresses (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id INT NOT NULL,
-            address_line1 VARCHAR(255) NOT NULL,
-            address_line2 VARCHAR(255),
-            city VARCHAR(100) NOT NULL,
-            state_province VARCHAR(100),
-            postal_code VARCHAR(20) NOT NULL,
-            country VARCHAR(100) NOT NULL,
-            address_type VARCHAR(50), -- e.g., 'shipping', 'billing'
-            is_default BOOLEAN DEFAULT FALSE,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS orders (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            buyer_id INT NOT NULL,
-            total_price DECIMAL(10, 2) NOT NULL,
-            status VARCHAR(50) DEFAULT 'Pending',
-            shipping_address_id INT NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (buyer_id) REFERENCES users(id),
-            FOREIGN KEY (shipping_address_id) REFERENCES addresses(id)
-        );
-
-        CREATE TABLE IF NOT EXISTS order_items (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            order_id INT NOT NULL,
-            product_id INT NOT NULL,
-            quantity INT NOT NULL,
-            price DECIMAL(10, 2) NOT NULL,
-            FOREIGN KEY (order_id) REFERENCES orders(id),
-            FOREIGN KEY (product_id) REFERENCES products(id)
-        );
-
-        CREATE TABLE IF NOT EXISTS payments (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            order_id INT NOT NULL UNIQUE, -- One payment per order (usually)
-            transaction_id VARCHAR(255), -- ID from payment gateway
-            payment_method VARCHAR(50), -- e.g., 'Credit Card', 'PayPal'
-            amount DECIMAL(10, 2) NOT NULL, -- Should match order_items total
-            currency VARCHAR(3) DEFAULT 'USD', -- Currency code
-            status VARCHAR(50) DEFAULT 'Pending', -- e.g., 'Completed', 'Failed'
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
         );
 
     ");

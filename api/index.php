@@ -126,6 +126,10 @@
         require "handlers/signin.php";
     }
 
+    elseif ($method === "GET" && $path === "/products/discounted") {
+        require "handlers/get_discounted_products.php";
+    }
+
     // GET /products – all products
     elseif ($method === "GET" && str_contains($path, "/products")) {
         require "handlers/products.php";
@@ -166,9 +170,20 @@
         require "handlers/get_me.php";
     }
 
+    // Get Orders Made to a Loged in user 
+    elseif ($method === "GET" && preg_match("#^/order/(\d+)$#", $path, $matches)) {
+        $seller_id = $matches[1];
+        require "handlers/order.php";
+    }
+
     elseif ($method === "GET" && isset($_GET['id']) && str_contains("/users", $path)) {
         $user_id = $_GET['id'];
         require "handlers/get_user.php";
+    }
+
+    // CHECK OUT 
+    elseif ($method === "POST" && $path === "/buy"){
+        require "handlers/orders.php";
     }
     
     else {
