@@ -13,7 +13,7 @@ if ($product_id == null || $product_id == false) {
 try {
     // Fetch product details
     $stmt = $pdo->prepare("
-        SELECT p.id, p.user_id, p.title, p.description, p.price, p.stock_quantity,
+        SELECT p.id, p.seller_id, p.title, p.description, p.price, p.original_price, p.stock_quantity,
                p.category_id, c.name AS category_name, p.created_at
         FROM products p
         JOIN categories c ON p.category_id = c.id

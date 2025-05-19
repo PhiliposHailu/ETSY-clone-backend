@@ -1,28 +1,38 @@
-<?php 
-
-// connect to my db 
+<?php
 require_once __DIR__ . '/../../config/db.php';
-
-// says :- sending json files your way front end (just specifies the data we send will be in json format)
+require_once 'auth.php';
 header("Content-Type: application/json");
 
-// $seller_id gets sent from the front end and gets extracted throght my router and sent here
+$authenticated_user_id = $user_id;
 
-try{
-    // apprently this filters out all the orders a loged in seller has recieved
-    $stmt = $pdo->prepare("
-        SELECT
+try {
+
+    $stmtSellerCheck = $pdo->prepare("SELECT seller_id FROM sellers WHERE user_id = ?");
+    $stmtSellerCheck->execute([$authenticated_user_id]);
+    $seller = $stmtSellerCheck->fetch(PDO::FETCH_ASSOC);
+
+
+    if (!$seller) {
+        http_response_code(403);
+        echo json_encode(["success" => false, "message" => "User is not registered as a seller."]);
+        exit;
+    }
+
+    $sql =
+        "SELECT
         o.id AS order_id,
         o.total_price AS order_total,
         o.status AS order_status,
         o.created_at AS order_date,
+        o.notes,
         u_buyer.username AS buyer_username,
         u_buyer.email AS buyer_email,
         oi.quantity AS product_quantity,
         oi.price AS product_price_at_order,
+        p.id AS product_id,
         p.title AS product_title,
         p.description AS product_description,
-        p.price AS current_product_price -- Note: This is the price in the products table, not the order item price
+        p.price AS current_product_price
     FROM
         orders o
     JOIN
@@ -31,20 +41,57 @@ try{
         products p ON oi.product_id = p.id
     JOIN
         users u_buyer ON o.buyer_id = u_buyer.id
+    JOIN
+        users u_seller ON p.seller_id = u_seller.id
     WHERE
-        p.user_id = ?");
+        u_seller.id = ?
+    ORDER BY
+        o.created_at DESC;
+    ";
 
-    $stmt->execute([$seller_id]);
-    $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    http_response_code(200);
-    if ($orders) {
-        echo json_encode(["success" => true, "message" => "You have recieved orders.", "data" => $orders]);
+    $stmt = $pdo->prepare($sql);
 
-    } else {
-        echo json_encode(["success" => false, "message" => "You have recieved no orders", "data" => []]);
+    $stmt->execute([$authenticated_user_id]);
+
+    $raw_orders_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $orders = [];
+    foreach ($raw_orders_data as $row) {
+        $order_id = $row['order_id'];
+
+        if (!isset($orders[$order_id])) {
+            $orders[$order_id] = [
+                'id' => $row['order_id'],
+                'customer' => $row['buyer_username'],
+                'date' => $row['order_date'],
+                'total' => (float) $row['order_total'],
+                'status' => $row['order_status'],
+                'notes' => $row['notes'],
+                'buyer_email' => $row['buyer_email'],
+                'items' => []
+            ];
+        }
+
+        $orders[$order_id]['items'][] = [
+            'product_id' => $row['product_id'] ?? null,
+            'title' => $row['product_title'] ?? 'Unknown Product',
+            'quantity' => (int) ($row['product_quantity'] ?? 0),
+            'price_at_order' => (float) ($row['product_price_at_order'] ?? 0.0),
+            'current_price' => (float) ($row['current_product_price'] ?? 0.0),
+            'description' => $row['product_description'] ?? ''
+        ];
     }
 
+    $orders = array_values($orders);
+
+    http_response_code(200);
+    echo json_encode([
+        "success" => true,
+        "authenticated_user_id" => $authenticated_user_id,
+        "message" => "Seller orders fetched successfully.",
+        "data" => $orders
+    ]);
 } catch (\PDOException $e) {
-    http_response_code(500); // internal server Problem
+    http_response_code(500);
     echo json_encode(["success" => false, "message" => "Unexpected Internal server problem."]);
 }

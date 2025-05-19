@@ -11,11 +11,10 @@ $data = json_decode($json_data, true);
 $email = trim(filter_var($data["email"] ?? "", FILTER_SANITIZE_EMAIL));
 $username = trim($data["username"] ?? "");
 $password = trim($data["password"] ?? "");
-$is_seller = $data["is_seller"]; /////////////////////////////////MICKY CHECK ME OUT //
+$is_seller = isset($data["is_seller"]) ? (bool) $data["is_seller"] : false;
 
 $errors = [];
 
-// Check required fields 
 if (empty($email)) $errors[] = "Email is required";
 if (empty($username)) $errors[] = "Username is required";
 if (empty($password)) $errors[] = "Password is required";
@@ -35,8 +34,7 @@ if (!empty($username)) {
 
 // Validate password strength 
 if (!empty($password)) {
-
-    if (strlen($password) < 7) $errors[] = "Password must be at least 7 characters";
+    if (strlen($password) < 5) $errors[] = "Password must be at least 5 characters";
     if (!preg_match("/[A-Z]/", $password)) $errors[] = "Password must contain an uppercase letter";
     if (!preg_match("/[0-9]/", $password)) $errors[] = "Password must contain a number";
 }
@@ -48,7 +46,8 @@ if (!empty($errors)) {
 }
 
 try {
-    // check if email or username already exists 
+    $pdo->beginTransaction();
+
     $stmt = $pdo->prepare("SELECT id, email, username FROM users WHERE email = ? OR username = ?");
     $stmt->execute([$email, $username]);
     $found = $stmt->fetch();
@@ -64,25 +63,58 @@ try {
         } elseif ($found['username'] == $username) {
             $error_message = "Username already taken. Please choose another one.";
         }
+
+        $pdo->rollBack();
         echo json_encode(["success" => false, "message" => $error_message]);
         exit;
     }
 
-    // Regsiter user 
+    // Register user in the users table
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
     $stmt = $pdo->prepare("INSERT INTO users (email, username, password_hash, is_seller) VALUES (?, ?, ?, ?)");
-    $registered = $stmt->execute([$email, $username, $hashedPassword, $is_seller]);
+    $user_registered = $stmt->execute([$email, $username, $hashedPassword, $is_seller]);
 
-    if ($registered) {
-        http_response_code(201);
-        echo json_encode(["success" => true, "message" => "Registration successful."]);
-    } else {
+    if (!$user_registered) {
+        $pdo->rollBack();
         http_response_code(500); // Server Side error
-        echo json_encode(["success" => false, "message" => "Falidto register user."]);
+        echo json_encode(["success" => false, "message" => "Failed to register user."]);
+        exit;
     }
+
+    $new_user_id = $pdo->lastInsertId();
+
+    if ($is_seller) {
+        $stmtSeller = $pdo->prepare("INSERT INTO sellers (user_id) VALUES (?)");
+        $seller_registered = $stmtSeller->execute([$new_user_id]);
+
+        if (!$seller_registered) {
+            $pdo->rollBack();
+            http_response_code(500);
+            echo json_encode(["success" => false, "message" => "Failed to register seller profile."]);
+            exit;
+        }
+    }
+
+    $pdo->commit();
+
+    $success_message = "Registration successful.";
+    if ($is_seller) {
+        $success_message .= " You have also been registered as a seller.";
+    }
+
+    http_response_code(201); // Created
+    echo json_encode(["success" => true, "message" => $success_message]);
 } catch (\PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     http_response_code(500);
-    // Log the error for debugging(just incase)
-    // error_log("Database error: " . $e->getMessage());
-    echo json_encode(["success" => false, "message" => "A database error occurred."]);
+    echo json_encode(["success" => false, "message" => "A database error occurred during registration."]);
+} catch (\Exception $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    http_response_code(500);
+    // error_log("Unexpected error: " . $e->getMessage());
+    echo json_encode(["success" => false, "message" => "An unexpected error occurred during registration."]);
 }

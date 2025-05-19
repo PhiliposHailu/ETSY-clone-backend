@@ -1,5 +1,5 @@
 <?php
-    header("Content-Type: application/json, multipart/form-data, application/x-www-form-urlencoded");
+    header("Content-Type: application/json, multipart/form-data");
     header("Access-Control-Allow-Credentials: true");
     header("Access-Control-Allow-Methods: GET, POST, OPTIONS, DELETE, PUT");
     header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -39,7 +39,6 @@
         }
         require "handlers/cart_delete.php";
     }
-    
     
     // for api/cart
     elseif($method == "GET" && $path == "/cart"){
@@ -130,8 +129,15 @@
         require "handlers/get_discounted_products.php";
     }
 
+    elseif ($method === "GET" && $path === "/products/purchased") {
+        require "handlers/purchased_products.php";
+    }
+
     // GET /products – all products
-    elseif ($method === "GET" && str_contains($path, "/products")) {
+    elseif ($method === "GET" && preg_match("#^/products(?:\?(?:seller=(\d+))?(?:&?category=(\d+))?)?$#", $path, $matches)) {
+        $sellerUserId = $matches[1] ?? null;
+        $category_id =  $matches[2] ?? null;
+    
         require "handlers/products.php";
     }
 
@@ -171,19 +177,30 @@
     }
 
     // Get Orders Made to a Loged in user 
-    elseif ($method === "GET" && preg_match("#^/order/(\d+)$#", $path, $matches)) {
-        $seller_id = $matches[1];
+    elseif ($method === "GET" && $path === "/orders") {
         require "handlers/order.php";
     }
 
-    elseif ($method === "GET" && isset($_GET['id']) && str_contains("/users", $path)) {
-        $user_id = $_GET['id'];
+    elseif ($method === "GET" && isset($_GET['id']) && preg_match("#^/users\?id=(\d+)$#", $path, $matches)) {
+        $user_id = $matches[1];
         require "handlers/get_user.php";
     }
 
     // CHECK OUT 
     elseif ($method === "POST" && $path === "/buy"){
         require "handlers/orders.php";
+    }
+
+    elseif ($method === "GET" && $path === "/recent"){
+        require "handlers/recent.php";
+    }
+
+    elseif ($method === "GET" && $path === "/stats"){
+        require "handlers/seller_stats.php";
+    }
+
+    elseif ($method === "GET" && $path === "/reviews"){
+        require "handlers/reviews_seller.php";
     }
     
     else {
