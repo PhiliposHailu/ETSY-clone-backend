@@ -8,17 +8,19 @@ $seller_user_id = filter_var($value, FILTER_VALIDATE_INT);
 
 try {
     // Fetch seller info by ID
-    $stmt = $pdo->prepare("SELECT
-                                u.id AS user_id, -- Alias user ID for clarity
-                                u.username,
-                                u.is_seller,
-                                s.seller_id, -- Get the seller_id from the sellers table
-                                s.bio,
-                                s.join_date,
-                                s.rating
-                           FROM users u -- Alias the users table as 'u'
-                           INNER JOIN sellers s ON u.id = s.user_id -- Join users and sellers tables on user_id
-                           WHERE u.id = ?");
+    $stmt = $pdo->prepare("
+        SELECT 
+            u.id AS user_id,  -- Alias user ID for clarity
+            u.username,
+            u.is_seller,
+            s.seller_id,  -- Get the seller_id from the sellers table
+            s.bio,
+            s.join_date,
+            s.rating
+        FROM users u -- Alias the users table as 'u'
+        INNER JOIN sellers s ON u.id = s.user_id  -- Join users and sellers tables on user_id
+        WHERE s.seller_id = ?
+        ");
     $stmt->execute([$seller_user_id]);
     $seller = $stmt->fetch(PDO::FETCH_ASSOC);
 

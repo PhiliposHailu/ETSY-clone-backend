@@ -1,4 +1,4 @@
-<?php 
+<?php
 // connect to our database 
 require_once __DIR__ . '/../../config/db.php';
 
@@ -8,10 +8,12 @@ header("Content-Type: application/json");
 // get the token 
 $token = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
 
+$token = str_replace("Bearer ", "", $token);
+
 // check if the token is found 
 if (!$token) {
     http_response_code(401); // Unautorized
-    echo json_encode([ "message" => "Access denied. No token provided." ]);
+    echo json_encode(["message" => "Access denied. No token provided."]);
     exit();
 }
 
@@ -30,7 +32,6 @@ try {
     }
 
     $user_id = $valid_token['user_id'];
-
 } catch (\PDOException $e) {
     http_response_code(500);
     // error log for debugging purposes

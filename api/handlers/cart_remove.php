@@ -3,17 +3,14 @@ require_once '../config/db.php';
 require_once 'auth.php';
 header('Content-Type: application/json');
 
-// Simulated user ID (replace this with session or token logic)
-$user_id = 1;
-
 $cookie_name = "cart";
 
 // Get product_id from GET or POST
-$product_id = isset($_GET['product_id']) ? (int)$_GET['product_id'] : 0;
+// $product_id = isset($_GET['product_id']) ? (int)$_GET['product_id'] : 0;
 
 if (!$product_id || $product_id <= 0) {
     http_response_code(400);
-    echo json_encode(['error' => 'Invalid product ID']);
+    echo json_encode(['error' => 'Invalid product ID'. $product_id]);
     exit;
 }
 

@@ -1,37 +1,101 @@
 <?php
-    require_once '../config/db.php';
-    require_once 'auth.php';
-    $data = json_decode(file_get_contents("php://input"), true);
-    $_POST = $data ?? [];
-    $rating = $_POST['rating'] ?? null;
-    $comment = $_POST['comment'] ?? '';
+require_once '../config/db.php';
+require_once 'auth.php';
 
-    echo "product:{$product_id}, user:{$user_id}, rating{$rating}";
+$json_data = file_get_contents("php://input");
+$data = json_decode($json_data, true);
 
-    // Basic validation
-    if (!$product_id || !$user_id || !$rating || $rating < 1 || $rating > 5) {
-        http_response_code(400);
-        echo json_encode(["error" => "Invalid input. Ensure product_id, user_id, and rating (1-5) are provided."]);
+$product_id = filter_var($data['product_id'] ?? null, FILTER_VALIDATE_INT);
+
+$user_id = $authenticated_user_id ?? null;
+
+$rating = filter_var($data['rating'] ?? null, FILTER_VALIDATE_INT);
+$comment = trim($data['comment'] ?? '');
+
+$errors = [];
+if (!$product_id) $errors[] = "Product ID is required and must be a valid integer.";
+if (!$user_id) $errors[] = "User authentication required.";
+if ($rating === null || $rating === false || $rating < 1 || $rating > 5) $errors[] = "Rating is required and must be between 1 and 5.";
+
+if (!empty($errors)) {
+    http_response_code(400);
+    echo json_encode(["success" => false, "message" => "Validation failed.", "errors" => $errors]);
+    exit;
+}
+
+try {
+
+    $pdo->beginTransaction();
+    $checkStmt = $pdo->prepare("SELECT id FROM reviews WHERE product_id = ? AND user_id = ?");
+    $checkStmt->execute([$product_id, $user_id]);
+
+    if ($checkStmt->fetch()) {
+        $pdo->rollBack();
+        http_response_code(409);
+        echo json_encode(["success" => false, "message" => "You have already reviewed this product."]);
         exit;
     }
 
-    try {
-        // Check if the user already reviewed the product (optional)
-        $checkStmt = $pdo->prepare("SELECT id FROM reviews WHERE product_id = ? AND user_id = ?");
-        $checkStmt->execute([$product_id, $user_id]);
+    $insertReviewStmt = $pdo->prepare("INSERT INTO reviews (product_id, user_id, rating, comment) VALUES (?, ?, ?, ?)");
+    $review_inserted = $insertReviewStmt->execute([$product_id, $user_id, $rating, $comment]);
 
-        if ($checkStmt->fetch()) {
-            http_response_code(409);
-            echo json_encode(["error" => "You have already reviewed this product."]);
-            exit;
-        }
+    if (!$review_inserted) {
 
-        $stmt = $pdo->prepare("INSERT INTO reviews (product_id, user_id, rating, comment) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$product_id, $user_id, $rating, $comment]);
-
-        echo json_encode(["message" => "Review added successfully."]);
-    } catch (PDOException $e) {
+        $pdo->rollBack();
         http_response_code(500);
-        echo json_encode(["error" => "Database error: " . $e->getMessage()]);
+        echo json_encode(["success" => false, "message" => "Failed to add review."]);
+        exit;
     }
-?>
+
+    $getSellerStmt = $pdo->prepare("SELECT seller_id FROM products WHERE id = ?");
+    $getSellerStmt->execute([$product_id]);
+    $product = $getSellerStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$product || !isset($product['seller_id'])) {
+
+        $pdo->rollBack();
+        http_response_code(404);
+        echo json_encode(["success" => false, "message" => "Product not found or not associated with a seller."]);
+        exit;
+    }
+
+    $seller_id = $product['seller_id'];
+
+    $calculateRatingStmt = $pdo->prepare(
+        "SELECT AVG(r.rating) AS average_rating
+            FROM reviews r
+            JOIN products p ON r.product_id = p.id
+            WHERE p.seller_id = ? "
+    );
+    $calculateRatingStmt->execute([$seller_id]);
+    $average_rating_row = $calculateRatingStmt->fetch(PDO::FETCH_ASSOC);
+
+    $new_average_rating = $average_rating_row['average_rating'];
+    $updateSellerRatingStmt = $pdo->prepare("UPDATE sellers SET rating = ? WHERE seller_id = ?");
+
+    $seller_rating_updated = $updateSellerRatingStmt->execute([number_format($new_average_rating, 2), $seller_id]);
+
+    if (!$seller_rating_updated) {
+
+        $pdo->rollBack();
+        http_response_code(500);
+        echo json_encode(["success" => false, "message" => "Failed to update seller rating."]);
+        exit;
+    }
+    $pdo->commit();
+
+    http_response_code(201);
+    echo json_encode(["success" => true, "message" => "Review added and seller rating updated successfully."]);
+} catch (\PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    http_response_code(500);
+    echo json_encode(["success" => false, "message" => "A database error occurred."]);
+} catch (\Exception $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    http_response_code(500);
+    echo json_encode(["success" => false, "message" => "An unexpected error occurred."]);
+}
