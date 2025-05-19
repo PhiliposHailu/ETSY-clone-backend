@@ -8,7 +8,10 @@
     $method = $_SERVER["REQUEST_METHOD"];
     $url = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 
-    $path = str_replace("/etsy/api", "", $url);
+    $path = str_replace("/etsy-clone-backend/api", "", $url);
+
+    // echo $method;
+    echo $url;
 
     if ($method === 'OPTIONS') {
         // Respond with 204 No Content for a successful preflight
@@ -136,9 +139,14 @@
     }
 
     // Get Orders Made to a Loged in user 
-    elseif ($method === "GET" && preg_match("/order/(\d+)$#", $path, $matches)) {
+    elseif ($method === "GET" && preg_match("#^/order/(\d+)$#", $path, $matches)) {
         $seller_id = $matches[1];
         require "handlers/order.php";
+    }
+
+    // CHECK OUT 
+    elseif ($method === "POST" && $path === "/buy"){
+        require "handlers/orders.php";
     }
     
     else {
